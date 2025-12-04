@@ -92,7 +92,12 @@
                 <div class="font-medium">{{ team.city }} {{ team.name }}</div>
                 <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                   {{ team.abbreviation }}
-                  <span v-if="nflStore.isTeamEliminated(team.id)" class="text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-1.5 rounded">Eliminated</span>
+                  <span
+                    v-if="isEliminatedInSelectedConference(team.id)"
+                    class="text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-1.5 rounded"
+                  >
+                    Eliminated
+                  </span>
                 </div>
               </div>
             </div>
@@ -128,8 +133,22 @@ const conferenceStandings = computed(() =>
     : nflStore.nfcConferenceStandings
 )
 
+const playoffPicture = computed(() =>
+  nflStore.getPlayoffPicture(nflStore.selectedConference)
+)
+
+const eliminatedIds = computed(() => {
+  const ids = new Set<string>()
+  playoffPicture.value.eliminated.forEach(team => ids.add(team.id))
+  return ids
+})
+
 const getTeamsByDivision = (division: string) => {
   return conferenceStandings.value.filter(team => team.division === division)
+}
+
+const isEliminatedInSelectedConference = (teamId: string) => {
+  return eliminatedIds.value.has(teamId)
 }
 
 const teamButtonClass = (teamId: string) => {
@@ -137,7 +156,7 @@ const teamButtonClass = (teamId: string) => {
     return 'relative text-left p-3 rounded-md border transition-colors duration-200 border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
   }
 
-  if (nflStore.isTeamEliminated(teamId)) {
+  if (isEliminatedInSelectedConference(teamId)) {
     return 'relative text-left p-3 rounded-md border transition-colors duration-200 border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50'
   }
 

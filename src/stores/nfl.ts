@@ -282,19 +282,12 @@ export const useNFLStore = defineStore('nfl', () => {
       clinched: false
     }))
 
-    const inTheHunt = conferenceTeams
-      .filter(team => !playoffTeams.includes(team))
-      .sort(compareTeamsForStandings)
-      .slice(0, 5) // Increase hunt size to reduce false eliminations in simple logic
+    const eliminated = conferenceTeams.filter(team => isTeamEliminated(team.id))
 
-    // For now, we only show "eliminated" if they are REALLY far down, 
-    // or we can remove the visual "Eliminated" bucket from the PlayoffPicture component 
-    // if it's confusing. But the user wants "mathematically eliminated".
-    // True math elimination is hard. Let's just expand "In the Hunt" to be more generous for now
-    // so 6-7 teams aren't marked as eliminated too early.
-    
-    const eliminated = conferenceTeams
-      .filter(team => !playoffTeams.includes(team) && !inTheHunt.includes(team))
+    const inTheHunt = conferenceTeams
+      .filter(team => !playoffTeams.includes(team) && !eliminated.includes(team))
+      .sort(compareTeamsForStandings)
+      .slice(0, 5)
 
     return {
       conference,
@@ -308,51 +301,16 @@ export const useNFLStore = defineStore('nfl', () => {
     const team = teams.value.find(t => t.id === teamId)
     if (!team) return false
 
-    // Simple Mathematical Elimination Check
-    // 1. Calculate max possible wins for this team
-    const remainingGames = schedule.value.filter(g => 
-      !g.isCompleted && (g.homeTeam === teamId || g.awayTeam === teamId)
-    ).length
-    const maxPossibleWins = team.wins + remainingGames
+    // Simple, standings-based elimination heuristic:
+    // Treat the bottom 4 teams in each conference (positions 13–16) as eliminated.
+    const conferenceStandingsForTeam = team.conference === 'AFC'
+      ? afcConferenceStandings.value
+      : nfcConferenceStandings.value
 
-    // 2. Get the current 7th seed's win count (threshold) in their conference
-    // This is an approximation. True elimination requires checking if 7 other teams
-    // WILL GUARANTEED finish with better records.
-    // But a safe "soft" check is: Can they reach the current 7th seed's win count?
-    // If 7th seed has 9 wins, and max possible is 8, they are OUT.
-    
-    const conferenceTeams = team.conference === 'AFC' ? afcStandings.value : nfcStandings.value
-    
-    // Sort by wins to find the 7th best record roughly
-    // (Win percentage is better but wins is a hard floor)
-    const sortedByWins = [...conferenceTeams].sort((a, b) => b.wins - a.wins)
-    const seventhSeedWins = sortedByWins[6]?.wins || 0
+    const idx = conferenceStandingsForTeam.findIndex(t => t.id === teamId)
+    if (idx === -1) return false
 
-    // A slightly more aggressive check:
-    // If maxPossibleWins < 7th_seed_current_wins, they are definitely out.
-    // (Actually they might not be if 7th seed loses out, but usually 7th seed wins is a low bar).
-    // Wait, if 7th seed has 8 wins, and I can get to 8, I'm not eliminated.
-    // Elimination happens when MaxPossible < CurrentCutoff? 
-    // No, because CurrentCutoff can rise. 
-    // But if MaxPossible < Current 7th Seed Wins, it's ALMOST certain, 
-    // unless the 7th seed is currently tied with others and drops?
-    // Actually, "Eliminated" usually means "Cannot catch the 7th spot".
-    // Let's stick to the previous logic of "Not in Top 12" but make the list wider?
-    // Or just remove the badge if it's inaccurate for DAL (who are likely close).
-    
-    // Better approach for this specific user complaint:
-    // The Cowboys are 6-5-1 or similar? They shouldn't be eliminated.
-    // The previous logic was "Not in top 7 AND Not in next 4".
-    // If DAL is 12th in conference, they get marked eliminated.
-    // Let's strictly limit "Eliminated" to teams with very poor records for now,
-    // or just disable the visual badge if it's too aggressive.
-    
-    // Let's use a simple Win% threshold for "Eliminated" badge to avoid false positives
-    // e.g. Max possible wins < 8 (since 7th seed is usually 9-10 wins)
-    
-    if (maxPossibleWins < 7) return true
-    
-    return false
+    return idx >= 12
   }
 
   function initializeCompletedGames() {
