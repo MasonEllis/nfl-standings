@@ -38,11 +38,12 @@
         </div>
         
         <div class="space-y-3">
-          <div
+          <button
             v-for="seed in playoffPicture.seeds"
             :key="seed.seed"
+            type="button"
             :class="[
-              'group relative flex items-center justify-between p-3 pr-4 rounded-xl border transition-all duration-200 bg-white dark:bg-gray-800 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600',
+              'group relative w-full flex items-center justify-between p-3 pr-4 rounded-xl border transition-all duration-200 bg-white dark:bg-gray-800 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 text-left cursor-pointer',
               seed.seed === 1 
                 ? 'border-amber-300 dark:border-amber-700/50 bg-gradient-to-r from-amber-50/50 to-transparent dark:from-amber-900/10' 
                 : seed.seed <= 4
@@ -50,6 +51,7 @@
                   : 'border-blue-200 dark:border-blue-900/30 bg-gradient-to-r from-blue-50/30 to-transparent dark:from-blue-900/10',
               seed.team.id === nflStore.selectedTeam ? 'ring-2 ring-blue-500 z-10' : ''
             ]"
+            @click="selectTeam(seed.team.id)"
           >
             <!-- Rank & Status Indicator -->
             <div class="flex items-center gap-6">
@@ -99,7 +101,7 @@
                <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Win %</div>
                <div class="font-bold text-gray-900 dark:text-white font-mono">{{ (seed.team.winPercentage * 100).toFixed(1) }}%</div>
             </div>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -112,13 +114,15 @@
             In the Hunt
           </h3>
           <div class="space-y-2">
-            <div
+            <button
               v-for="team in playoffPicture.inTheHunt"
               :key="team.id"
+              type="button"
               :class="[
-                'flex items-center justify-between p-2.5 rounded-lg border bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-colors',
+                'w-full flex items-center justify-between p-2.5 rounded-lg border bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-colors text-left cursor-pointer',
                 team.id === nflStore.selectedTeam ? 'ring-2 ring-blue-500' : ''
               ]"
+              @click="selectTeam(team.id)"
             >
               <div class="flex items-center gap-3">
                 <img :src="nflStore.getTeamLogoUrl(team.id)" :alt="team.name" class="w-8 h-8 object-contain" />
@@ -128,7 +132,7 @@
                 </div>
               </div>
               <div class="text-xs font-mono text-gray-500">{{ (team.winPercentage * 100).toFixed(0) }}%</div>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -139,13 +143,15 @@
             Eliminated
           </h3>
           <div class="space-y-2">
-            <div
+            <button
               v-for="team in playoffPicture.eliminated"
               :key="team.id"
+              type="button"
               :class="[
-                'flex items-center justify-between p-2.5 rounded-lg border border-transparent hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors opacity-75 hover:opacity-100',
+                'w-full flex items-center justify-between p-2.5 rounded-lg border border-transparent hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors opacity-75 hover:opacity-100 text-left cursor-pointer',
                 team.id === nflStore.selectedTeam ? 'ring-2 ring-blue-500 opacity-100' : ''
               ]"
+              @click="selectTeam(team.id)"
             >
               <div class="flex items-center gap-3">
                 <img :src="nflStore.getTeamLogoUrl(team.id)" :alt="team.name" class="w-8 h-8 object-contain" />
@@ -155,7 +161,7 @@
                 </div>
               </div>
               <div class="text-xs font-mono text-gray-500 dark:text-gray-400">{{ (team.winPercentage * 100).toFixed(0) }}%</div>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -188,4 +194,8 @@ const nflStore = useNFLStore()
 const playoffPicture = computed(() => {
   return nflStore.getPlayoffPicture(nflStore.selectedConference)
 })
+
+const selectTeam = (teamId: string) => {
+  nflStore.setSelectedTeam(teamId)
+}
 </script>

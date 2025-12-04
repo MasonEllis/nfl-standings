@@ -101,7 +101,7 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Team Selection (Left) -->
+        <!-- Team Selection / Standings (Left) -->
         <div>
           <TeamSelector />
         </div>
@@ -113,7 +113,7 @@
           </div>
         </div>
 
-        <!-- Playoff Picture (Right) -->
+        <!-- Right Column: Playoff Picture -->
         <div>
           <PlayoffPicture />
         </div>
@@ -123,11 +123,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useNFLStore } from '../stores/nfl'
 import TeamSelector from './TeamSelector.vue'
 import TeamSchedule from './TeamSchedule.vue'
 import PlayoffPicture from './PlayoffPicture.vue'
-import { ref, onMounted } from 'vue'
 
 const nflStore = useNFLStore()
 const isDark = ref(false)

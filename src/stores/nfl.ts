@@ -171,6 +171,73 @@ export const useNFLStore = defineStore('nfl', () => {
     })
   }
 
+  function compareHeadToHead(a: Team, b: Team) {
+    let aWins = 0
+    let bWins = 0
+
+    for (const game of schedule.value) {
+      const involvesA = game.homeTeam === a.id || game.awayTeam === a.id
+      const involvesB = game.homeTeam === b.id || game.awayTeam === b.id
+      if (!involvesA || !involvesB) continue
+
+      // Determine final scores with predictions applied (mirrors recalculateStandings logic)
+      let homeScore = game.homeScore
+      let awayScore = game.awayScore
+      let isCompleted = game.isCompleted
+
+      const prediction = predictions.value.find(p => p.gameId === game.id)
+      if (prediction) {
+        homeScore = prediction.homeScore
+        awayScore = prediction.awayScore
+        isCompleted = true
+      }
+
+      if (!isCompleted || homeScore === undefined || awayScore === undefined) continue
+
+      if (homeScore === awayScore) continue
+
+      const winnerId = homeScore > awayScore ? game.homeTeam : game.awayTeam
+      if (winnerId === a.id) aWins++
+      else if (winnerId === b.id) bWins++
+    }
+
+    if (aWins > bWins) return -1
+    if (bWins > aWins) return 1
+    return 0
+  }
+
+  function compareTeamsForStandings(a: Team, b: Team) {
+    // 1) Overall win percentage
+    if (b.winPercentage !== a.winPercentage) {
+      return b.winPercentage - a.winPercentage
+    }
+
+    // 2) Head-to-head (only matters once overall records are the same)
+    const h2h = compareHeadToHead(a, b)
+    if (h2h !== 0) {
+      return h2h
+    }
+
+    // 3) Division record percentage (only meaningful for teams in same division)
+    if (a.division === b.division) {
+      const aDivGames = a.divisionWins + a.divisionLosses
+      const bDivGames = b.divisionWins + b.divisionLosses
+      const aDivPct = aDivGames > 0 ? a.divisionWins / aDivGames : 0
+      const bDivPct = bDivGames > 0 ? b.divisionWins / bDivGames : 0
+      if (bDivPct !== aDivPct) {
+        return bDivPct - aDivPct
+      }
+    }
+
+    // 4) Conference record percentage
+    const aConfGames = a.conferenceWins + a.conferenceLosses
+    const bConfGames = b.conferenceWins + b.conferenceLosses
+    const aConfPct = aConfGames > 0 ? a.conferenceWins / aConfGames : 0
+    const bConfPct = bConfGames > 0 ? b.conferenceWins / bConfGames : 0
+
+    return bConfPct - aConfPct
+  }
+
   function sortTeamsByStandings(teamList: Team[]) {
     const divisions = ['North', 'South', 'East', 'West']
     const sortedTeams: Team[] = []
@@ -178,19 +245,7 @@ export const useNFLStore = defineStore('nfl', () => {
     divisions.forEach(division => {
       const divisionTeams = teamList
         .filter(team => team.division === division)
-        .sort((a, b) => {
-          if (b.winPercentage !== a.winPercentage) {
-            return b.winPercentage - a.winPercentage
-          }
-          const aDivPct = a.divisionWins / (a.divisionWins + a.divisionLosses) || 0
-          const bDivPct = b.divisionWins / (b.divisionWins + b.divisionLosses) || 0
-          if (bDivPct !== aDivPct) {
-            return bDivPct - aDivPct
-          }
-          const aConfPct = a.conferenceWins / (a.conferenceWins + a.conferenceLosses) || 0
-          const bConfPct = b.conferenceWins / (b.conferenceWins + b.conferenceLosses) || 0
-          return bConfPct - aConfPct
-        })
+        .sort(compareTeamsForStandings)
 
       sortedTeams.push(...divisionTeams)
     })
@@ -198,17 +253,25 @@ export const useNFLStore = defineStore('nfl', () => {
     return sortedTeams
   }
 
+  const afcConferenceStandings = computed(() =>
+    [...afcTeams.value].sort(compareTeamsForStandings)
+  )
+
+  const nfcConferenceStandings = computed(() =>
+    [...nfcTeams.value].sort(compareTeamsForStandings)
+  )
+
   function getPlayoffPicture(conference: 'AFC' | 'NFC'): PlayoffPicture {
-    const conferenceTeams = conference === 'AFC' ? afcStandings.value : nfcStandings.value
+    const conferenceTeams = conference === 'AFC' ? afcConferenceStandings.value : nfcConferenceStandings.value
     
     const divisions = ['North', 'South', 'East', 'West']
-    const divisionWinners = divisions.map(division => 
-      conferenceTeams.find(team => team.division === division)!
-    ).sort((a, b) => b.winPercentage - a.winPercentage)
+    const divisionWinners = divisions
+      .map(division => conferenceTeams.find(team => team.division === division)!)
+      .sort(compareTeamsForStandings)
 
     const wildCardTeams = conferenceTeams
       .filter(team => !divisionWinners.includes(team))
-      .sort((a, b) => b.winPercentage - a.winPercentage)
+      .sort(compareTeamsForStandings)
       .slice(0, 3)
 
     const playoffTeams = [...divisionWinners, ...wildCardTeams]
@@ -221,7 +284,7 @@ export const useNFLStore = defineStore('nfl', () => {
 
     const inTheHunt = conferenceTeams
       .filter(team => !playoffTeams.includes(team))
-      .sort((a, b) => b.winPercentage - a.winPercentage) // Ensure hunt is also sorted
+      .sort(compareTeamsForStandings)
       .slice(0, 5) // Increase hunt size to reduce false eliminations in simple logic
 
     // For now, we only show "eliminated" if they are REALLY far down, 
@@ -346,6 +409,8 @@ export const useNFLStore = defineStore('nfl', () => {
     teamSchedule,
     afcStandings,
     nfcStandings,
+    afcConferenceStandings,
+    nfcConferenceStandings,
     setSelectedTeam,
     setSelectedConference,
     getTeamLogoUrl,
