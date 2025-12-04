@@ -47,7 +47,7 @@
                 ? 'border-amber-300 dark:border-amber-700/50 bg-gradient-to-r from-amber-50/50 to-transparent dark:from-amber-900/10' 
                 : seed.seed <= 4
                   ? 'border-emerald-200 dark:border-emerald-900/30 bg-gradient-to-r from-emerald-50/30 to-transparent dark:from-emerald-900/10'
-                  : 'border-gray-100 dark:border-gray-700/50',
+                  : 'border-blue-200 dark:border-blue-900/30 bg-gradient-to-r from-blue-50/30 to-transparent dark:from-blue-900/10',
               seed.team.id === nflStore.selectedTeam ? 'ring-2 ring-blue-500 z-10' : ''
             ]"
           >
@@ -61,7 +61,7 @@
                     ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400' 
                     : seed.seed <= 4 
                       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400' 
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400'
                 ]">
                   {{ seed.seed }}
                 </div>
