@@ -1,13 +1,35 @@
 <template>
-  <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border dark:border-gray-800 p-6 transition-colors duration-300">
-    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-      <span class="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg text-base text-gray-600 dark:text-gray-300">
-        {{ nflStore.selectedConference }}
-      </span>
+  <div :class="[
+    'relative overflow-hidden rounded-lg shadow-sm border p-6 transition-colors duration-500',
+    nflStore.selectedConference === 'AFC' 
+      ? 'bg-red-50/80 border-red-200 dark:bg-red-950/20 dark:border-red-800/50' 
+      : 'bg-blue-50/80 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800/50'
+  ]">
+    <!-- Strong Top Gradient Bar -->
+    <div :class="[
+      'absolute top-0 left-0 right-0 h-1.5 w-full z-10',
+      nflStore.selectedConference === 'AFC' ? 'bg-red-500' : 'bg-blue-500'
+    ]"></div>
+
+    <h2 class="relative text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3 pt-2">
+      <div class="relative w-12 h-12 flex items-center justify-center">
+        <img 
+          v-if="nflStore.selectedConference === 'AFC'"
+          src="https://a.espncdn.com/i/teamlogos/nfl/500/afc.png"
+          alt="AFC Logo"
+          class="w-full h-full object-contain drop-shadow-md"
+        />
+        <img 
+          v-else
+          src="https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png"
+          alt="NFC Logo"
+          class="w-full h-full object-contain drop-shadow-md"
+        />
+      </div>
       <span>Playoff Picture</span>
     </h2>
     
-    <div class="flex flex-col gap-8">
+    <div class="relative flex flex-col gap-8">
       <!-- Playoff Teams -->
       <div>
         <div class="flex items-center justify-between mb-4">
