@@ -124,7 +124,7 @@
                 <img :src="nflStore.getTeamLogoUrl(team.id)" :alt="team.name" class="w-8 h-8 object-contain" />
                 <div>
                   <div class="font-semibold text-gray-900 dark:text-white text-sm">{{ team.city }}</div>
-                  <div class="text-xs text-gray-500">{{ team.wins }}-{{ team.losses }}</div>
+                  <div class="text-xs text-gray-500">{{ team.wins }}-{{ team.losses }}{{ team.ties > 0 ? `-${team.ties}` : '' }}</div>
                 </div>
               </div>
               <div class="text-xs font-mono text-gray-500">{{ (team.winPercentage * 100).toFixed(0) }}%</div>
@@ -148,11 +148,13 @@
               ]"
             >
               <div class="flex items-center gap-3">
-                <img :src="nflStore.getTeamLogoUrl(team.id)" :alt="team.name" class="w-8 h-8 object-contain grayscale" />
+                <img :src="nflStore.getTeamLogoUrl(team.id)" :alt="team.name" class="w-8 h-8 object-contain" />
                 <div>
                   <div class="font-medium text-gray-500 dark:text-gray-400 text-sm">{{ team.city }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ team.wins }}-{{ team.losses }}{{ team.ties > 0 ? `-${team.ties}` : '' }}</div>
                 </div>
               </div>
+              <div class="text-xs font-mono text-gray-500 dark:text-gray-400">{{ (team.winPercentage * 100).toFixed(0) }}%</div>
             </div>
           </div>
         </div>

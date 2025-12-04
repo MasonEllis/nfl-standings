@@ -22,12 +22,12 @@
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
             ]"
           >
-            <div class="flex justify-between items-center" :class="{ 'opacity-60': nflStore.isTeamEliminated(team.id) }">
+            <div class="flex justify-between items-center">
               <div class="flex items-center space-x-3">
                 <img 
                   :src="nflStore.getTeamLogoUrl(team.id)" 
                   :alt="team.name" 
-                  :class="['w-10 h-10 object-contain', nflStore.isTeamEliminated(team.id) ? 'grayscale' : '']" 
+                  class="w-10 h-10 object-contain"
                 />
                 <div>
                   <div class="font-medium">{{ team.city }} {{ team.name }}</div>
@@ -54,7 +54,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useNFLStore } from '../stores/nfl'
 
 const nflStore = useNFLStore()
