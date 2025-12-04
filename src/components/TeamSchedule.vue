@@ -1,7 +1,13 @@
 <template>
   <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border dark:border-gray-800 p-4 transition-colors duration-300">
-    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-      {{ nflStore.selectedTeamData?.city }} {{ nflStore.selectedTeamData?.name }} Schedule
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+      <img 
+        v-if="nflStore.selectedTeamData"
+        :src="nflStore.getTeamLogoUrl(nflStore.selectedTeamData.id)" 
+        :alt="nflStore.selectedTeamData.name" 
+        class="w-10 h-10 object-contain"
+      />
+      <span>{{ nflStore.selectedTeamData?.city }} {{ nflStore.selectedTeamData?.name }} Schedule</span>
     </h2>
     
     <div class="flex flex-wrap gap-3">
